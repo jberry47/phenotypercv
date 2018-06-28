@@ -1,0 +1,13 @@
+width = getWidth; 
+height = getHeight;
+path = getDirectory("Where to save masks");
+n = roiManager("count");
+for(i=0;i<n;i++){
+    newImage("Untitled", "8-bit black", width, height, 1);
+    selectWindow("Untitled");
+    roiManager("Select", i);
+    roiManager("Fill");
+    j=i+1;
+    saveAs("PNG", path+j+"_mask.png");
+    close();
+}
