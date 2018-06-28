@@ -46,6 +46,9 @@ Author: Jeffrey Berry (Bart Lab)
 Description:
 Program takes single column stdout input of file paths to images to be averaged
 
+Compiling notes:
+same as phenotypercv.cpp except this does not require Eigen
+
 Usage:
 cat Images/SnapshotInfo.csv | grep Fm000Z | grep VIS_SV | awk -F'[;,]' '{print "Images/snapshot"$2"/"$12".png"}' | ./Avg_Images
 
@@ -58,6 +61,9 @@ Author: Jeffrey Berry (Bart Lab)
 
 Description: 
 This program extracts the RGB information of the color checker in the image. This requires a folder called card_masks that contains a binary image of each of the chips in the checker. See example folder. The output is written to stdout so you have to redirect it to target_homography.csv to be used by phenotypercv.cpp. 
+
+Compiling notes:
+same as phenotypercv.cpp except this does not require Eigen
 
 Usage: 
 ./Camera_Calib average_images.png > target_homography.csv
