@@ -368,8 +368,12 @@ int main(int argc, char** argv){
 	bool bool_vis = img_type=="VIS";
 	bool bool_vis_CH = img_type=="VIS_CH";
 	if(bool_vis | bool_vis_CH){
+	//-- Putting black rectangle over the barcode area of input and background images
 		Mat inputImage = imread(argv[2]);
+		rectangle(inputImage,Point(1110,1338),Point(1371,1455),15,CV_FILLED);
 		Mat adjBackground = imread(argv[3]);
+		rectangle(adjBackground,Point(1110,1338),Point(1371,1455),15,CV_FILLED);
+	
 	//-- Processing the VIS image
 		Mat adjImage;
 		float det=0;
