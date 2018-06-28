@@ -1,4 +1,4 @@
-# phenotypercv
+# phenotypercv.cpp
 
 Title: PhenotyperCV
 Author: Jeffrey Berry (Bart Lab)
@@ -35,3 +35,41 @@ number of cores like this:
    
    Usage NIR:
       find Images/ -name 'NIR_SV*' | xargs -P8 -I{} ./PhenotyperCV NIR {} nir_color.txt
+
+
+
+# avg_images.cpp
+
+Title: Avg_Images
+Author: Jeffrey Berry (Bart Lab)
+
+Description:
+Program takes single column stdout input of file paths to images to be averaged
+
+Usage:
+cat Images/SnapshotInfo.csv | grep Fm000Z | grep VIS_SV | awk -F'[;,]' '{print "Images/snapshot"$2"/"$12".png"}' | ./Avg_Images
+
+
+
+# camera_calib.cpp
+
+Title: Camera_Calib
+Author: Jeffrey Berry (Bart Lab)
+
+Description: 
+This program extracts the RGB information of the color checker in the image. This requires a folder called card_masks that contains a binary image of each of the chips in the checker. See example folder. The output is written to stdout so you have to redirect it to target_homography.csv to be used by phenotypercv.cpp. 
+
+Usage: 
+./Camera_Calib average_images.png > target_homography.csv
+
+
+
+# make_rois.txt
+
+Title: Make_ROIs
+Author: Jeffrey Berry (Bart Lab)
+
+Description: This is an ImageJ macro that loops through ROI's in the ROI manager and creates the binary images required for camera_calib.cpp and phenotypercv.cpp (VIS_CH mode). 
+
+Usage:
+First you must manually make a ROI with the selector tool of your choosing and go through the chips one by one and add them to the ROI manager. The easiest way to do this is to open the manager first then move the ROI over a chip and press "t". Then move the next chip and again press "t" and so on. After all the ROIs are in the manager, go to Plugins > Macros > Run and execute this file. 
