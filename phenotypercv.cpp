@@ -370,10 +370,8 @@ int main(int argc, char** argv){
 	if(bool_vis | bool_vis_CH){
 	//-- Putting black rectangle over the barcode area of input and background images
 		Mat inputImage = imread(argv[2]);
-		rectangle(inputImage,Point(1110,1338),Point(1371,1455),15,CV_FILLED);
 		Mat adjBackground = imread(argv[3]);
-		rectangle(adjBackground,Point(1110,1338),Point(1371,1455),15,CV_FILLED);
-	
+
 	//-- Processing the VIS image
 		Mat adjImage;
 		float det=0;
@@ -402,6 +400,17 @@ int main(int argc, char** argv){
     	Mat dest_erode;
     	erode(dest_dilate,dest_erode, Mat(), Point(-1, -1), 5, 1, 1);
 
+   	//-- Removing barcode
+    	Mat lab;
+    	cvtColor(adjImage, lab, CV_BGR2Lab);
+    	vector<Mat> split_lab;
+    	split(lab, split_lab);
+    	Mat b_thresh1;
+    	inRange(split_lab[2],90,141,b_thresh1);
+    	Mat invSrc =  cv::Scalar::all(255) - b_thresh1;
+    	Mat mask1;
+    	bitwise_and(dest_erode,invSrc,mask1);
+
     //-- Remove edges of pot
     	Mat dest_lab;
     	cvtColor(dest, dest_lab, CV_BGR2Lab);
@@ -418,17 +427,13 @@ int main(int argc, char** argv){
     	Mat pot_erode;
     	erode(pot_dilate,pot_erode, Mat(), Point(-1, -1), 3, 1, 1);
     	Mat pot_and;
-    	bitwise_and(pot_erode,dest_erode,pot_and);
+    	bitwise_and(pot_erode,mask1,pot_and);
     	Mat pot_roi;
     	vector<Point> cc_pot = keep_roi(pot_and,Point(300,600),Point(1610,1310),pot_roi);
 
     //-- Remove blue stakes
-    	Mat inputImage_lab;
-    	cvtColor(inputImage, inputImage_lab, CV_BGR2Lab);
-    	vector<Mat> img_channels_lab;
-    	split(inputImage_lab, img_channels_lab);
     	Mat b_thresh;
-    	inRange(img_channels_lab[2],80,115,b_thresh);
+    	inRange(split_lab[2],80,115,b_thresh);
     	Mat b_er;
     	erode(b_thresh,b_er, Mat(), Point(-1, -1), 1, 1, 1);
     	Mat b_roi;
@@ -444,7 +449,7 @@ int main(int argc, char** argv){
     //-- Getting numerical data
     	float fd = get_fd(mask);
     	vector<double> shapes_data = get_shapes(cc,mask);
-    	Mat hue_data = get_color(inputImage, mask);
+    	Mat hue_data = get_color(adjImage, mask);
 
     //-- Write shapes to file
     	string name_shape= string(argv[4]);
