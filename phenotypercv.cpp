@@ -479,18 +479,34 @@ int main(int argc, char** argv){
 	}
     //-- Processing the NIR image
 	else if(bool_nir){
-    	Mat nirImage1 = imread(argv[2],0);
-    	Mat nirImage;
-    	flip(nirImage1,nirImage,-1);
-   		Rect roi_nir = Rect(0, 0, 636,370);
-   		nirImage = nirImage(roi_nir);
-    	Mat nir_thresh;
-    	inRange(nirImage,63,130,nir_thresh);
-    	Mat kept_mask_nir;
-    	vector<Point> cc = keep_roi(nir_thresh,Point(200,175),Point(420,370),kept_mask_nir);
+		//-- Read in image and background
+    	Mat nirImage = imread(argv[2],0);
+    	Mat nirBackground = imread(argv[3],0);
 
+    	//-- Difference between image and background
+		Mat dest_nir;
+		absdiff(nirBackground,nirImage,dest_nir);
+		Mat dest_nir_thresh;
+		inRange(dest_nir,10,255,dest_nir_thresh);
+
+		//-- Remove white stake
+		Mat dest_stake;
+		inRange(dest_nir,60,255,dest_stake);
+		Mat dest_stake_dil;
+		dilate(dest_stake, dest_stake_dil, Mat(), Point(-1, -1), 2, 1, 1);
+		Mat kept_stake;
+    	vector<Point> cc = keep_roi(dest_stake_dil,Point(270,183),Point(350,375),kept_stake);
+    	Mat dest_sub = dest_nir_thresh - kept_stake;
+
+        //-- ROI selector
+    	Mat kept_mask_nir;
+    	cc = keep_roi(dest_sub,Point(171,102),Point(470,363),kept_mask_nir);
+
+        //-- Getting numerical data
     	Mat nir_data = get_nir(nirImage, kept_mask_nir);
-   		string name_nir= string(argv[3]);
+
+        //-- Writing numerical data
+    	string name_nir= string(argv[4]);
    		ofstream nir_file;
    		nir_file.open(name_nir.c_str(),ios_base::app);
    		nir_file << argv[2] << " ";
