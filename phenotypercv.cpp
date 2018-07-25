@@ -54,6 +54,31 @@ using namespace cv;
 using namespace std;
 using namespace Eigen;
 
+int is_oof(Mat img){
+	//-- Get contours of mask
+	vector<vector<Point> > contours;
+	vector<Vec4i> hierarchy;
+    findContours( img, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0) );
+
+    //-- Get contours of rectangular roi
+    Mat src = Mat::zeros(img.size(),img.type())+255;
+
+    vector<vector<Point> > contours_roi;
+    vector<Vec4i> hierarchy_roi;
+    findContours( src, contours_roi, hierarchy_roi, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0) );
+
+    int check = 0;
+    //-- Keep only those contours that have a point inside roi
+    for(unsigned int i=0; i < contours.size(); i++){
+      	for(unsigned int j=0; j<contours[i].size(); j++){
+      		int test = pointPolygonTest(contours_roi[0],Point2f(contours[i][j]),false);
+      		if(test == 0){
+      			check = 1;
+      		}
+       	}
+    }
+	return check;
+}
 
 vector<Point> keep_roi(Mat img,Point tl, Point br, Mat &mask){
 	//-- Get contours of mask
@@ -190,8 +215,10 @@ vector<double> get_shapes(vector<Point> cc,Mat mask){
    	    round = eminor/emajor;
    	    ar = emajor/eminor;
     }
-    double shapes[18] = {area,hull_area,solidity,perimeter,width,height,cmx,cmy,hull_verticies,ex,ey,emajor,eminor,angle,eccen,circ,round,ar};
-    vector<double> shapes_v(shapes,shapes+18);
+    float fd = get_fd(mask);
+    double oof = is_oof(mask);
+    double shapes[20] = {area,hull_area,solidity,perimeter,width,height,cmx,cmy,hull_verticies,ex,ey,emajor,eminor,angle,eccen,circ,round,ar,fd,oof};
+    vector<double> shapes_v(shapes,shapes+20);
     return shapes_v;
 }
 
@@ -447,7 +474,6 @@ int main(int argc, char** argv){
     	vector<Point> cc = keep_roi(b_xor,Point(550,0),Point(1810,1410),mask);
 
     //-- Getting numerical data
-    	float fd = get_fd(mask);
     	vector<double> shapes_data = get_shapes(cc,mask);
     	Mat hue_data = get_color(adjImage, mask);
 
@@ -456,12 +482,14 @@ int main(int argc, char** argv){
     	ofstream shape_file;
     	shape_file.open(name_shape.c_str(),ios_base::app);
     	shape_file << argv[2] << " ";
-    	for(int i=0;i<18;i++){
-    		shape_file << shapes_data[i] << " ";
+    	for(int i=0;i<20;i++){
+    		shape_file << shapes_data[i];
+    		if(i != 19){
+    			shape_file << " ";
+    		}
     	}
-    	shape_file << fd << " ";
     	if(bool_vis_CH){
-    		shape_file << D << " ";
+    		shape_file << " " << D;
     	}
     	shape_file << endl;
     	shape_file.close();
@@ -501,6 +529,11 @@ int main(int argc, char** argv){
         //-- ROI selector
     	Mat kept_mask_nir;
     	cc = keep_roi(dest_sub,Point(171,102),Point(470,363),kept_mask_nir);
+
+    	namedWindow("Image",WINDOW_NORMAL);
+    	        	    resizeWindow("Image",636,508);
+    	        	    imshow("Image", kept_mask_nir);
+    	waitKey(0);
 
         //-- Getting numerical data
     	Mat nir_data = get_nir(nirImage, kept_mask_nir);
