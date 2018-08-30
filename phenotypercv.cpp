@@ -21,6 +21,7 @@
  *
  * 	3) NIR - segment and measure plant in near-infrared images
  * 		Example: ./PhenotyperCV NIR input_image.png nir_color.txt
+ * * g++ -I/shares/bioinfo/installs/opencv-3.1.0/install/include -I/shares/bioinfo/installs/eigen/Eigen -L/shares/bioinfo/installs/opencv-3.1.0/install/lib -lopencv_imgproc -lopencv_imgcodecs -lopencv_core phenotypercv.cpp -o PhenotyperCV
  *
  * Compiling Notes:
  * -I/usr/local/include/opencv -I/usr/local/include/opencv2 -I/usr/include/Eigen
@@ -262,12 +263,12 @@ float extractRGB_chips(Mat img,Mat &mask){
 	calcHist(&img1,1,0,mask,hist, dims, &histSize, &ranges ,true ,false);
 
 	int sum=0;
-	for(int i = 0;i<256;i++){
+	for(int i = 0;i<255;i++){
 		sum += hist.at<float>(i,0);
 	}
 	Mat weights = hist/sum;
 	float hist_avg=0.0;
-	for(int i = 0;i<256;i++){
+	for(int i = 0;i<255;i++){
 		hist_avg += i*weights.at<float>(i,0);
 	}
 	return hist_avg;
@@ -509,6 +510,14 @@ int main(int argc, char** argv){
 	else if(bool_nir){
 		//-- Read in image and background
     	Mat nirImage = imread(argv[2],0);
+    	Mat nir_fixed = 1.591*nirImage-31.803;
+    	namedWindow("Original",WINDOW_NORMAL);
+    	    	        	    resizeWindow("Original",800,800);
+    	    	        	    imshow("Original", nirImage);
+    	namedWindow("Enhanced",WINDOW_NORMAL);
+    	        	    resizeWindow("Enhanced",800,800);
+    	        	    imshow("Enhanced", nir_fixed);
+    	waitKey(0);
     	Mat nirBackground = imread(argv[3],0);
 
     	//-- Difference between image and background
@@ -529,11 +538,6 @@ int main(int argc, char** argv){
         //-- ROI selector
     	Mat kept_mask_nir;
     	cc = keep_roi(dest_sub,Point(171,102),Point(470,363),kept_mask_nir);
-
-    	namedWindow("Image",WINDOW_NORMAL);
-    	        	    resizeWindow("Image",636,508);
-    	        	    imshow("Image", kept_mask_nir);
-    	waitKey(0);
 
         //-- Getting numerical data
     	Mat nir_data = get_nir(nirImage, kept_mask_nir);
