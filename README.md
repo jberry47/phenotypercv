@@ -1,3 +1,5 @@
+For the most up-to-date version of this program, please visit [DDPSC PhenotyperCV](https://github.com/jberry47/ddpsc_phenotypercv)
+
 # phenotypercv.cpp
 
 Title: PhenotyperCV
