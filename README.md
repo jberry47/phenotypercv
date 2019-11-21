@@ -1,5 +1,8 @@
 For the most up-to-date version of this program, please visit [DDPSC PhenotyperCV](https://github.com/jberry47/ddpsc_phenotypercv)
 
+What is contained in this repo, is the exact code that was used to produce data found in the publication https://peerj.com/articles/5727/ 
+
+
 # phenotypercv.cpp
 
 Title: PhenotyperCV
